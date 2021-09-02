@@ -3,16 +3,33 @@
 Azure Batch プール内の全ノードのエージェントログを収集します。
 
 .DESCRIPTION
-Azure Batch プール内の全ノードのエージェントログを収集します。
 このスクリプトは Batch アカウントと関連付けられたストレージアカウントないに Blob コンテナを作成、各エージェントログがコンテナ内にアップロードされたのち、ローカル環境にダウンロードします。
 全てのノードから各ノードがデプロイされて以降の全ログを収集するため、データ量が膨大になる可能性があるため注意してください。
 スクリプト実行前に Batch アカウントおよびストレージアカウントに十分のアクセス権があるアカウントで Azure に接続 (Connect-AzAccount) してください。
 
+.EXAMPLE
+PS> Connect-AzAccount
+PS> .\Collect-AgentLogs.ps1 -batchaccount 'yourAccountName' -poolid 'target-node-pool-id'
+
+.PARAMETER batchaccount
+バッチアカウント名を指定します。
+
+.PARAMETER poolid
+計算ノードが含まれるプールIDを指定します。
+
+.LINK
+Start-AzBatchComputeNodeServiceLogUpload
+
+.LINK
+Azure Batch のベストプラクティス: https://docs.microsoft.com/ja-jp/azure/batch/best-practices#nodes
 #>
 
 param(
-    [string]$bachAccountName,
-    [string]$pool
+    [parameter(Mandatory)]
+    [string]
+    $bachtaccount,
+    [parameter(Mandatory)]
+    [string]$poolid
 )
 
 # 指定したバッチアカウントとストレージアカウント情報を取得
@@ -33,7 +50,7 @@ Write-Host "agent log will be uploaded to $($container.CloudBlobContainer.Uri)"
 $pool = Get-AzBatchPool -BatchContext $batctx -Id $poolid
 
 Get-AzBatchComputeNode -BatchContext $batctx -PoolId $poolid | foreach {
-	 Start-AzBatchComputeNodeServiceLogUpload -BatchContext $batctx -ContainerUrl $uploadurl  -ComputeNode $_ -StartTime $_.AllocationTime
+	Start-AzBatchComputeNodeServiceLogUpload -BatchContext $batctx -ContainerUrl $uploadurl  -ComputeNode $_ -StartTime $_.AllocationTime
 } | sv upresults
 
 $upresults | foreach {
