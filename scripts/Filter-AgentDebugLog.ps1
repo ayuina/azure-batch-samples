@@ -82,42 +82,38 @@ function Main()
     $logs = Get-ChildItem $root -Filter "agent-debug.log" -Recurse 
     $logs | foreach {
         $log = $_
-        $result = @{ 
-            node = $log.Directory.Parent.Name; 
-            history = @()
-        }
-
+        $results = @{node = $log.Directory.Parent.Name}
+        
         $lines = Get-Content -Path $log.FullName
-        $lines | foreach {
-            TryParse-EachLine -line $_ -ctx $result
-        }
-        return [PSCustomObject]$result
+        $results.history = $lines | foreach { TryParse-EachLine -line $_  }
+        return [PSCustomObject]$results
     }
 }
 
 
-function TryParse-EachLine([string]$line, [hashtable]$ctx)
+function TryParse-EachLine([string]$line)
 {
+    $history = @()
     $columns = $line.Split('■')
-
     $parserDefinition | foreach {
         if($columns[5] -eq $_.module -and $columns[6] -eq $_.file -and $columns[7] -eq $_.method )
         {
             if($columns[12] -match $_.pattern)
             {
                 $record = @{
-                    raw = $line;
                     timestamp = Get-TimeStamp $columns[2];
                     eventname = $_.eventname;
-                    properties = @{ }
+                    properties = @{ };
+                    raw = $line;
                 }
                 $Matches.Keys | where { $_ -is [string]} | foreach {
                     $record.properties[$_] = $Matches[$_]
                 }
-                $ctx.history += [pscustomobject]$record
+                $history += [pscustomobject]$record
             }
         }
     }
+    return $history
 }
 
 function Get-TimeStamp([string]$tsstring) 
