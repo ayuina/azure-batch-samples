@@ -45,7 +45,7 @@ $sasend = $sasstart.AddHours(3)
 $sas = New-AzStorageContainerSASToken -Context $strctx  -Name $uploadcontainer -Permission rwdl -StartTime $sasstart -ExpiryTime $sasend
 $uploadurl = "{0}{1}" -f $container.CloudBlobContainer.Uri, $sas
 
-#各ノードの全エージェントログをストレージにアップロード
+# 各ノードの全エージェントログをストレージにアップロード
 Write-Host "agent log will be uploaded to $($container.CloudBlobContainer.Uri)"
 $pool = Get-AzBatchPool -BatchContext $batctx -Id $poolid
 
@@ -54,9 +54,10 @@ Get-AzBatchComputeNode -BatchContext $batctx -PoolId $poolid | foreach {
 	Start-AzBatchComputeNodeServiceLogUpload -BatchContext $batctx -ContainerUrl $uploadurl  -ComputeNode $_ -StartTime $_.AllocationTime
 } | sv upresults
 
+# Blob に格納されたログファイルをダウンロード
 $upresults | foreach {
 	$blobdir = $_.VirtualDirectoryName
-	$dir = New-Item -ItemType Directory -Path $blobdir
+	$dir = New-Item -ItemType Directory -Path "$uploadcontainer/$blobdir"
 	$logs = ('agent-debug.log', 'agent-warn.log', 'controller-debug.log', 'controller-warn.log')
 	$logs | foreach {
 		Write-Host "downloading from $blobdir/$_"
