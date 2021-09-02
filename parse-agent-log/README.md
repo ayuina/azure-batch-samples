@@ -6,6 +6,8 @@ Login as the account which has enough privilege to access Batch and Storage.
 PS > Connect-AzAccount -Identity
 ```
 
+# Downlaod agent logs
+
 Specify the environment.
 
 ```powershell
@@ -18,6 +20,10 @@ Collect and download agent logs.
 ```powershell
 PS > .\Collect-AgentLogs.ps1 -bachtaccount $batacount -poolid $poolid
 ```
+
+Scale-in or delete pool if need to optimize cost.
+
+# Parse agent logs
 
 Load log files, filter record, and convert to powershell object.
 ```powershell

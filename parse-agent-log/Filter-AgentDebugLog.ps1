@@ -83,6 +83,7 @@ function Main()
     $logs | foreach {
         $log = $_
         $results = @{node = $log.Directory.Parent.Name}
+        Write-Host "parsing $($log.FullName)"
         
         $lines = Get-Content -Path $log.FullName
         $results.history = $lines | foreach { TryParse-EachLine -line $_  }
