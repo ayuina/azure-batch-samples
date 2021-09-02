@@ -50,6 +50,7 @@ Write-Host "agent log will be uploaded to $($container.CloudBlobContainer.Uri)"
 $pool = Get-AzBatchPool -BatchContext $batctx -Id $poolid
 
 Get-AzBatchComputeNode -BatchContext $batctx -PoolId $poolid | foreach {
+	Write-Host "uploading from $($_.Id) to storage"
 	Start-AzBatchComputeNodeServiceLogUpload -BatchContext $batctx -ContainerUrl $uploadurl  -ComputeNode $_ -StartTime $_.AllocationTime
 } | sv upresults
 
@@ -58,6 +59,7 @@ $upresults | foreach {
 	$dir = New-Item -ItemType Directory -Path $blobdir
 	$logs = ('agent-debug.log', 'agent-warn.log', 'controller-debug.log', 'controller-warn.log')
 	$logs | foreach {
-		Get-AzStorageBlobContent -Context $strctx -Container $uploadcontainer -Blob "$blobdir/$_" -Destination  "$($dir.FullName)/$_"
+		Write-Host "downloading from $blobdir/$_"
+		$blob = Get-AzStorageBlobContent -Context $strctx -Container $uploadcontainer -Blob "$blobdir/$_" -Destination  "$($dir.FullName)/$_"
 	}
 }

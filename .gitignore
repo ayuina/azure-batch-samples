@@ -5,6 +5,7 @@
 
 *.log
 __*
+run.ps1
 
 # User-specific files
 *.rsuser
