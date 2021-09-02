@@ -6,6 +6,7 @@
 *.log
 __*
 run.ps1
+*.csv
 
 # User-specific files
 *.rsuser
